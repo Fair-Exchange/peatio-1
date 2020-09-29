@@ -60,9 +60,8 @@ class Trade < ApplicationRecord
       end
     end
 
-    def public_from_influx_with_filters(market, taker_type, start_time, end_time, limit = 100)
-      trades_query = 'SELECT id, price, amount, total, taker_type, market, created_at FROM trades WHERE market=%{market} AND taker_type=%{taker_type} AND created_at >= %{start_time} AND created_at <= %{end_time} ORDER BY desc LIMIT %{limit}'
-      Peatio::InfluxDB.client(keyshard: market).query trades_query, params: { market: market, limit: limit } do |_name, _tags, points|
+    def public_from_influx_with_filters(market, query, filters)
+      Peatio::InfluxDB.client(keyshard: market).query query, params: filters do |_name, _tags, points|
         return points.map(&:deep_symbolize_keys!)
       end
     end
